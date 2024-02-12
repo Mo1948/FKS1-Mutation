@@ -17,7 +17,7 @@ def main():
 
     # Check if two sequences are provided as command-line arguments
     if len(sys.argv) != 3:
-        print("Usage: python script.py reference_sequence experimental_sequence")
+        print("Insert reference_sequence and experimental_sequence")
         return
 
     # Read sequences from command-line arguments
