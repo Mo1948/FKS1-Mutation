@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+
+from Bio.Seq import Seq
+
+def find_mutations(reference_seq, experimental_seq, start_position, end_position):
+    mutations = []
+
+    for i, (ref_base, exp_base) in enumerate(zip(reference_seq[start_position:end_position], experimental_seq[start_position:end_position]), start_position):
+        if ref_base != exp_base:
+            mutation_info = f"Position {i}: {ref_base} -> {exp_base}"
+            mutations.append(mutation_info)
+
+    return mutations
+
+def main():
+    import sys
+
+    # Check if two sequences are provided as command-line arguments
+    if len(sys.argv) != 3:
+        print("Usage: python script.py reference_sequence experimental_sequence")
+        return
+
+    # Read sequences from command-line arguments
+    reference_seq = Seq(sys.argv[1])
+    experimental_seq = Seq(sys.argv[2])
+
+    # Ignoring the first and last 25 positions
+    start_position = 101
+    end_position = min(len(reference_seq), len(experimental_seq)) - 100
+
+    # Find mutations
+    mutations = find_mutations(reference_seq, experimental_seq, start_position, end_position)
+
+    # Display mutation information
+    if mutations:
+        print("Mutations found:")
+        for mutation in mutations:
+            print(mutation)
+    else:
+        print("No mutations found.")
+
+if __name__ == "__main__":
+    main()
+
