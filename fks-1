@@ -1,44 +1,45 @@
 #!/usr/bin/env python3
 
-from Bio.Seq import Seq
+import os
+from Bio import SeqIO
 
-def find_mutations(reference_seq, experimental_seq, start_position, end_position):
+# Function to read the wild-type sequence from a FASTA file
+def read_wild_type_sequence(directory):
+    for filename in os.listdir(directory):
+        if filename.endswith(".fasta") and not filename.startswith("OQ"):
+            wild_type_file_path = os.path.join(directory, filename)
+            for record in SeqIO.parse(wild_type_file_path, "fasta"):
+                return str(record.seq)
+def find_mutations(wild_type_sequence, sequence):
     mutations = []
-
-    for i, (ref_base, exp_base) in enumerate(zip(reference_seq[start_position:end_position], experimental_seq[start_position:end_position]), start_position):
-        if ref_base != exp_base:
-            mutation_info = f"Position {i}: {ref_base} -> {exp_base}"
-            mutations.append(mutation_info)
-
+    for i, (base_wt, base_seq) in enumerate(zip(wild_type_sequence, sequence)):
+        if base_wt != base_seq:
+            mutations.append((i + 1, base_wt, base_seq))  # Position is 1-indexed
     return mutations
 
-def main():
-    import sys
 
-    # Check if two sequences are provided as command-line arguments
-    if len(sys.argv) != 3:
-        print("Insert reference_sequence and experimental_sequence")
-        return
+# Function to process all FASTA files in a directory
+def process_fasta_directory(directory, wild_type_sequence):
+    for filename in os.listdir(directory):
+        if filename.endswith(".fasta") and not filename.startswith("wild_type_"):
+            file_path = os.path.join(directory, filename)
+            print(f"Processing file: {file_path}")
+            for record in SeqIO.parse(file_path, "fasta"):
+                sequence = str(record.seq)
+                mutations = find_mutations(wild_type_sequence, sequence)
+                if mutations:
+                    print(f"Found {len(mutations)} mutations in sequence {record.id}:")
+                    for location, base_wt, base_seq in mutations:
+                        print(f"- Position {location}: {base_wt} -> {base_seq}")
 
-    # Read sequences from command-line arguments
-    reference_seq = Seq(sys.argv[1])
-    experimental_seq = Seq(sys.argv[2])
-
-    # Ignoring the first and last 25 positions
-    start_position = 101
-    end_position = min(len(reference_seq), len(experimental_seq)) - 100
-
-    # Find mutations
-    mutations = find_mutations(reference_seq, experimental_seq, start_position, end_position)
-
-    # Display mutation information
-    if mutations:
-        print("Mutations found:")
-        for mutation in mutations:
-            print(mutation)
-    else:
-        print("No mutations found.")
-
+# Main function
 if __name__ == "__main__":
-    main()
+    # Specify the directory containing the FASTA files
+    fasta_directory = "/Users/mahmoudel-mahmoud/fks1-mutation"
+
+    # Read the wild-type sequence from the designated file
+    wild_type_sequence = read_wild_type_sequence(fasta_directory)
+
+    # Process all FASTA files in the directory
+    process_fasta_directory(fasta_directory, wild_type_sequence)
 
